@@ -19,6 +19,10 @@ enum Snapshots {
 
         _ = NSApplication.shared
         NSApp.setActivationPolicy(.accessory)
+        if let icon = NSImage(contentsOfFile: "Resources/AppIcon.png") {
+            icon.setName("AppIcon")
+            NSApp.applicationIconImage = icon
+        }
 
         let model = await sampleModel()
         for appearance in [NSAppearance.Name.aqua, .darkAqua] {
@@ -32,7 +36,7 @@ enum Snapshots {
                 ("onboarding", AnyView(OnboardingView {})),
             ]
             for (name, page) in pages {
-                render(page.environment(model).tint(Theme.accent).background(.background),
+                await render(page.environment(model).tint(Theme.accent).background(.background),
                        size: CGSize(width: 860, height: 760), appearance: appearance,
                        to: output.appending(path: "\(name)\(suffix).png"))
             }
@@ -54,7 +58,7 @@ enum Snapshots {
             pill.phase = phase
             let backdrop = LinearGradient(colors: [Color(red: 0.2, green: 0.25, blue: 0.4), Color(red: 0.55, green: 0.35, blue: 0.45)],
                                           startPoint: .topLeading, endPoint: .bottomTrailing)
-            render(PillView(model: pill).background(backdrop), size: CGSize(width: 420, height: 110),
+            await render(PillView(model: pill).environment(\.pillRendersGlass, false).background(backdrop), size: CGSize(width: 420, height: 110),
                    appearance: .darkAqua, to: output.appending(path: "pill-\(name).png"))
         }
         print("✓ Snapshots written to \(output.path)")
@@ -63,7 +67,8 @@ enum Snapshots {
 
     private static func sampleModel() async -> AppModel {
         let directory = FileManager.default.temporaryDirectory.appending(path: "shukawhisper-snapshots-\(UUID().uuidString)")
-        let model = AppModel(supportDirectory: directory)
+        // A fake key so screenshots never reveal part of a real one.
+        let model = AppModel(supportDirectory: directory, apiKey: "AIzaSyDEMOKEYnotreal0000000000000000demo")
         model.configuration.dictionary = ["Supabase", "kubectl", "Claude Code", "Vercel", "Théo", "TanStack Query"]
             .map { DictionaryEntry(term: $0) }
         model.configuration.dictionary[1].aliases = ["cube control", "cubectal"]
@@ -86,19 +91,27 @@ enum Snapshots {
         return model
     }
 
-    private static func render<V: View>(_ view: V, size: CGSize, appearance: NSAppearance.Name, to url: URL) {
+    private static func render<V: View>(_ view: V, size: CGSize, appearance: NSAppearance.Name, to url: URL) async {
         let hosting = NSHostingView(rootView: view.frame(width: size.width, height: size.height))
         let window = NSWindow(contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         window.appearance = NSAppearance(named: appearance)
         window.contentView = hosting
         window.orderBack(nil)
-        // Let SwiftUI run `.task` modifiers and animations settle.
-        RunLoop.main.run(until: Date().addingTimeInterval(0.8))
+        // Let SwiftUI run `.task` modifiers (which need the main actor) and animations settle.
+        for _ in 0..<16 {
+            spinRunLoop(for: 0.03)
+            try? await Task.sleep(for: .milliseconds(30))
+        }
         hosting.layoutSubtreeIfNeeded()
 
         guard let rep = hosting.bitmapImageRepForCachingDisplay(in: hosting.bounds) else { return }
         hosting.cacheDisplay(in: hosting.bounds, to: rep)
         try? rep.representation(using: .png, properties: [:])?.write(to: url)
         window.orderOut(nil)
+    }
+
+    /// Lets AppKit/SwiftUI process pending layout and drawing.
+    private static func spinRunLoop(for seconds: TimeInterval) {
+        RunLoop.main.run(until: Date().addingTimeInterval(seconds))
     }
 }

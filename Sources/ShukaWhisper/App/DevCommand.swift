@@ -28,7 +28,7 @@ enum DevCommand {
     }
 
     private static func run(file: URL, bundleID: String?, host: String?) async throws {
-        guard let key = APIKeyProvider.load() else {
+        guard let key = APIKeyStore.load() else {
             print("error: no API key (set GEMINI_API_KEY or ~/.config/shukawhisper/key)")
             exit(1)
         }

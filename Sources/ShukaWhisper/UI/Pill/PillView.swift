@@ -34,7 +34,7 @@ struct PillView: View {
                 .id(contentID)
         }
         .frame(width: size.width, height: size.height)
-        .glassEffect(.regular.tint(tint), in: .capsule)
+        .modifier(PillSurface(tint: tint))
         .opacity(opacity)
         .scaleEffect(isHidden ? 0.4 : 1, anchor: .bottom)
         .modifier(Shake(trigger: isError ? 1 : 0))
@@ -92,7 +92,7 @@ struct PillView: View {
                 .foregroundStyle(.white.opacity(0.9))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .glassEffect(.regular.tint(.black.opacity(0.35)), in: .capsule)
+                .modifier(PillSurface(tint: .black.opacity(0.35)))
                 .environment(\.colorScheme, .dark)
                 .transition(.opacity.combined(with: .offset(y: 6)))
         }
@@ -138,6 +138,39 @@ struct PillView: View {
 }
 
 // MARK: - Pieces
+
+private struct PillRendersGlassKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+extension EnvironmentValues {
+    /// Set to `false` to draw the pill with a solid surface instead of Liquid Glass
+    /// (used when rendering snapshots, where glass can't be captured).
+    var pillRendersGlass: Bool {
+        get { self[PillRendersGlassKey.self] }
+        set { self[PillRendersGlassKey.self] = newValue }
+    }
+}
+
+/// Liquid Glass capsule, or a solid dark capsule when transparency is reduced.
+private struct PillSurface: ViewModifier {
+    var tint: Color
+    @Environment(\.pillRendersGlass) private var rendersGlass
+    @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
+
+    func body(content: Content) -> some View {
+        if rendersGlass && !reduceTransparency {
+            content.glassEffect(.regular.tint(tint), in: .capsule)
+        } else {
+            content.background {
+                Capsule()
+                    .fill(Color(white: 0.1).opacity(0.94))
+                    .overlay(Capsule().fill(tint.opacity(0.6)))
+                    .overlay(Capsule().strokeBorder(.white.opacity(0.12), lineWidth: 0.5))
+            }
+        }
+    }
+}
 
 /// Symmetric bars: the newest level sits in the middle and ripples outwards.
 private struct Waveform: View {

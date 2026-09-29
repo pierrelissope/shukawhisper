@@ -146,12 +146,12 @@ struct OnboardingView: View {
     }
 }
 
-/// The app icon, with a gradient fallback when running outside a bundle.
+/// The app icon.
 struct AppLogo: View {
     var size: CGFloat
 
     var body: some View {
-        Image(nsImage: NSApp.applicationIconImage)
+        Image(nsImage: NSImage(named: "AppIcon") ?? NSApp.applicationIconImage)
             .resizable()
             .interpolation(.high)
             .frame(width: size, height: size)

@@ -39,7 +39,7 @@ final class AppModel {
     static let defaultSupportDirectory = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         .appending(path: "ShukaWhisper", directoryHint: .isDirectory)
 
-    init(supportDirectory support: URL = AppModel.defaultSupportDirectory) {
+    init(supportDirectory support: URL = AppModel.defaultSupportDirectory, apiKey: String? = APIKeyStore.load()) {
         configurationStore = ConfigurationStore(fileURL: support.appending(path: "config.json"))
         do {
             history = try HistoryStore(url: support.appending(path: "history.sqlite"))
@@ -47,7 +47,7 @@ final class AppModel {
             NSLog("ShukaWhisper: history unavailable (\(error)); using an in-memory store")
             history = try! HistoryStore(url: nil)
         }
-        apiKey = APIKeyProvider.load()
+        self.apiKey = apiKey
     }
 
     /// Starts listening for hotkeys once permissions allow it.
@@ -74,10 +74,10 @@ final class AppModel {
     func setAPIKey(_ key: String?) {
         let trimmed = key?.trimmingCharacters(in: .whitespacesAndNewlines)
         if let trimmed, !trimmed.isEmpty {
-            KeychainStore.setAPIKey(trimmed)
+            APIKeyStore.save(trimmed)
             apiKey = trimmed
         } else {
-            KeychainStore.deleteAPIKey()
+            APIKeyStore.delete()
             apiKey = nil
         }
     }

@@ -57,7 +57,7 @@ Transforms use `gemini-3.8-flash` (higher quality, latency less critical).
 
 - **Native Swift 6 + SwiftUI + AppKit**, macOS 26 only. No Electron or Tauri: the app stays around 20 MB of RAM, starts instantly, and gets native Liquid Glass (`glassEffect`) and real system integration.
 - **Swift Package Manager**, built with the command-line tools you already have (no Xcode). A `make` script builds, bundles and signs `ShukaWhisper.app` and installs it to `/Applications`.
-- **Zero third-party dependencies** unless one clearly pays off. `URLSession` handles HTTP and WebSocket, `AVAudioEngine` handles audio, and Keychain stores the API key.
+- **Zero third-party dependencies** unless one clearly pays off. `URLSession` handles HTTP and WebSocket, `AVAudioEngine` handles audio, and the API key lives in a private `~/.config/shukawhisper/key` file (0600). The Keychain was dropped: without an Apple Developer ID it re-prompts for the password after every rebuild.
 - **Code signing**: a local self-signed certificate is created once, so the Accessibility and Microphone permissions **survive rebuilds**. Ad-hoc signing resets them every build.
 
 ### System integration
@@ -98,7 +98,7 @@ Transforms use `gemini-3.8-flash` (higher quality, latency less critical).
 │                                                                           │
 │  Persistence: Settings/Dictionary/Styles/Transforms → JSON in             │
 │  ~/Library/Application Support/ShukaWhisper · History → SQLite ·          │
-│  API key → Keychain                                                       │
+│  API key → ~/.config/shukawhisper/key (0600)                            │
 │                                                                           │
 │  UI: MenuBarExtra · Main window (Home/History · Dictionary · Styles ·     │
 │      Transforms · Settings) · Onboarding (key + permissions)              │
@@ -112,7 +112,7 @@ Sources/
   ShukaWhisper/          app entry, AppDelegate, dependency wiring
   Core/                  DictationSession, TransformSession, StyleResolver, PromptBuilder, models
   Gemini/                LiveTranscriber, BatchTranscriber, TextModel, API types
-  System/                HotkeyMonitor, AudioRecorder, ContextProvider, TextInserter, Permissions, Keychain
+  System/                HotkeyMonitor, AudioRecorder, ContextProvider, TextInserter, Permissions, APIKeyStore
   Storage/               SettingsStore, HistoryStore (SQLite)
   UI/                    Pill/, MainWindow/, Onboarding/, DesignSystem/
 Tests/CoreTests/         state machine, style resolution, prompt building, API parsing (mocked network)
@@ -143,7 +143,7 @@ Makefile                 make run | make install | make test
 
 ## 6. Implementation phases (autonomous)
 
-1. **Skeleton**: SwiftPM package, app bundle script, signing cert, menu bar app launches, onboarding (API key → Keychain, Mic + Accessibility permissions).
+1. **Skeleton**: SwiftPM package, app bundle script, signing cert, menu bar app launches, onboarding (API key → private config file, Mic + Accessibility permissions).
 2. **Gemini layer + bake-off**: resolve model IDs, implement live/batch transcribers + text model, CLI harness to benchmark the three pipelines on recorded FR/EN samples, then pick the winner.
 3. **Dictation loop**: hotkeys (hold, double-tap lock, Esc), recorder, session state machine, formatter, insertion. End-to-end working in any app.
 4. **Pill UI**: all states and animations.

@@ -35,13 +35,21 @@ struct SettingsView: View {
                     .fixedSize()
                 }
                 Divider()
-                Toggle(isOn: settings.cleanupEnabled) {
-                    label("AI cleanup & styles", detail: "Remove filler words, fix punctuation and apply your styles. Off inserts the raw transcript.")
+                row("AI cleanup & styles", detail: "Remove filler words, fix punctuation and apply your styles. Off inserts the raw transcript.") {
+                    Toggle("", isOn: settings.cleanupEnabled).labelsHidden()
                 }
-                Toggle(isOn: settings.playSounds) { label("Sound effects") }
-                Toggle(isOn: settings.showIdleIndicator) { label("Show resting indicator", detail: "A small dot at the bottom of the screen when idle.") }
-                Toggle(isOn: settings.restoreClipboard) { label("Restore clipboard after inserting") }
-                LaunchAtLoginToggle()
+                row("Sound effects") {
+                    Toggle("", isOn: settings.playSounds).labelsHidden()
+                }
+                row("Show resting indicator", detail: "A small dot at the bottom of the screen when idle.") {
+                    Toggle("", isOn: settings.showIdleIndicator).labelsHidden()
+                }
+                row("Restore clipboard after inserting", detail: "Your clipboard is put back after text is pasted.") {
+                    Toggle("", isOn: settings.restoreClipboard).labelsHidden()
+                }
+                row("Open at login") {
+                    LaunchAtLoginToggle()
+                }
             }
 
             APIKeySection()
@@ -117,10 +125,9 @@ private struct LaunchAtLoginToggle: View {
     @State private var enabled = SMAppService.mainApp.status == .enabled
 
     var body: some View {
-        Toggle(isOn: $enabled) {
-            Text("Open at login")
-        }
-        .onChange(of: enabled) { _, newValue in
+        Toggle("Open at login", isOn: $enabled)
+            .labelsHidden()
+            .onChange(of: enabled) { _, newValue in
             do {
                 if newValue { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
             } catch {
@@ -167,7 +174,7 @@ struct APIKeySection: View {
                     }
                     Link("Get a free key at aistudio.google.com", destination: URL(string: "https://aistudio.google.com/apikey")!)
                         .font(.caption)
-                    Text("Stored in your macOS Keychain. Only sent to Google's Gemini API.")
+                    Text("Saved in ~/.config/shukawhisper/key, readable only by you. Only sent to Google's Gemini API.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

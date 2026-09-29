@@ -1,8 +1,12 @@
 import AppKit
 
-// Developer mode: `ShukaWhisper --transcribe file.wav` runs the pipeline headless and exits.
-// `ShukaWhisper --snapshots dir` renders the UI to PNG files and exits.
-if await DevCommand.runIfRequested() || Snapshots.runIfRequested() {
+// Developer commands run headless and exit:
+//   ShukaWhisper --transcribe file.wav   runs the dictation pipeline on a recording
+//   ShukaWhisper --snapshots dir         renders the UI to PNG files
+if await DevCommand.runIfRequested() {
+    exit(0)
+}
+if await Snapshots.runIfRequested() {
     exit(0)
 }
 
