@@ -75,14 +75,10 @@ struct OnboardingView: View {
             text: "Audio is streamed to Gemini only while you hold the dictation key. Nothing is recorded to disk.",
             button: "Allow microphone"
         ) {
-            if Permissions.microphoneDenied {
-                Permissions.openMicrophoneSettings()
-            } else {
-                Task {
-                    _ = await Permissions.requestMicrophone()
+            Task {
+                    await Permissions.requestMicrophone()
                     app.refreshPermissions()
                 }
-            }
         }
     }
 

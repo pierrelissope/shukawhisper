@@ -36,7 +36,7 @@ enum APIKeyStore {
             try Data(key.utf8).write(to: fileURL)
             return true
         } catch {
-            NSLog("ShukaWhisper: could not save API key: \(error)")
+            Log.info("could not save API key: \(error)")
             return false
         }
     }

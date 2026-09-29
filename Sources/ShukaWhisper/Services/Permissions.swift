@@ -9,13 +9,23 @@ enum Permissions {
         AVCaptureDevice.authorizationStatus(for: .audio) == .authorized
     }
 
-    static var microphoneDenied: Bool {
+    /// Asks for microphone access. Shows the system prompt the first time; if access was
+    /// already refused (or the prompt can't be shown), opens the Microphone settings pane instead.
+    static func requestMicrophone() async {
         let status = AVCaptureDevice.authorizationStatus(for: .audio)
-        return status == .denied || status == .restricted
-    }
-
-    static func requestMicrophone() async -> Bool {
-        await AVCaptureDevice.requestAccess(for: .audio)
+        Log.info("microphone status before request = \(status.rawValue)")
+        switch status {
+        case .authorized:
+            return
+        case .notDetermined:
+            // The prompt only appears reliably when the app is frontmost.
+            NSApp.activate()
+            let granted = await AVCaptureDevice.requestAccess(for: .audio)
+            Log.info("microphone request granted = \(granted)")
+            if !granted { openMicrophoneSettings() }
+        default:
+            openMicrophoneSettings()
+        }
     }
 
     /// Needed to listen to global hotkeys, read selected text and paste.
@@ -30,18 +40,28 @@ enum Permissions {
     }
 
     static func openAccessibilitySettings() {
-        open("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+        openPrivacyPane("Privacy_Accessibility")
     }
 
     static func openMicrophoneSettings() {
-        open("x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone")
+        openPrivacyPane("Privacy_Microphone")
     }
 
     static func openKeyboardSettings() {
         open("x-apple.systempreferences:com.apple.Keyboard-Settings.extension")
     }
 
-    private static func open(_ url: String) {
-        if let url = URL(string: url) { NSWorkspace.shared.open(url) }
+    /// macOS 13+ uses the `PrivacySecurity.extension` URL; older systems the legacy one.
+    private static func openPrivacyPane(_ anchor: String) {
+        let modern = "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?\(anchor)"
+        let legacy = "x-apple.systempreferences:com.apple.preference.security?\(anchor)"
+        let opened = open(modern) || open(legacy)
+        Log.info("open settings pane \(anchor): \(opened)")
+    }
+
+    @discardableResult
+    private static func open(_ url: String) -> Bool {
+        guard let url = URL(string: url) else { return false }
+        return NSWorkspace.shared.open(url)
     }
 }

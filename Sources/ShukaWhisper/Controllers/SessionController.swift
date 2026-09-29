@@ -246,7 +246,7 @@ final class SessionController {
         } catch is CancellationError {
             throw CancellationError()
         } catch {
-            NSLog("ShukaWhisper: cleanup failed (\(error.localizedDescription)); inserting raw transcript")
+            Log.info("cleanup failed (\(error.localizedDescription)); inserting raw transcript")
             return transcript
         }
     }

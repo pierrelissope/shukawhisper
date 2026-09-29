@@ -10,6 +10,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate, NSWind
     private var mainWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "dev"
+        Log.info("launched v\(version), parent pid \(getppid()), microphone \(Permissions.microphoneGranted), accessibility \(Permissions.accessibilityGranted)")
         model.showMainWindow = { [weak self] in self?.showMainWindow() }
         model.start()
         pillController = PillWindowController(model: model.pill)

@@ -44,7 +44,7 @@ final class AppModel {
         do {
             history = try HistoryStore(url: support.appending(path: "history.sqlite"))
         } catch {
-            NSLog("ShukaWhisper: history unavailable (\(error)); using an in-memory store")
+            Log.info("history unavailable (\(error)); using an in-memory store")
             history = try! HistoryStore(url: nil)
         }
         self.apiKey = apiKey
@@ -87,7 +87,7 @@ final class AppModel {
             do {
                 try await history.insert(entry)
             } catch {
-                NSLog("ShukaWhisper: could not save history: \(error)")
+                Log.info("could not save history: \(error)")
             }
             historyRevision += 1
         }

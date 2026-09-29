@@ -131,7 +131,7 @@ private struct LaunchAtLoginToggle: View {
             do {
                 if newValue { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
             } catch {
-                NSLog("ShukaWhisper: launch at login failed: \(error)")
+                Log.info("launch at login failed: \(error)")
                 enabled = SMAppService.mainApp.status == .enabled
             }
         }
@@ -236,14 +236,10 @@ struct PermissionsSection: View {
                         title: "Microphone", detail: "To hear your voice.",
                         granted: app.microphoneGranted
                     ) {
-                        if Permissions.microphoneDenied {
-                            Permissions.openMicrophoneSettings()
-                        } else {
-                            Task {
-                                _ = await Permissions.requestMicrophone()
-                                app.refreshPermissions()
-                            }
-                        }
+                        Task {
+                    await Permissions.requestMicrophone()
+                    app.refreshPermissions()
+                }
                     }
                     Divider()
                     PermissionRow(
