@@ -32,7 +32,7 @@ So:
 We're lucky to live at a time when trying, iterating and learning have never been this easy. Use it. Fork this repo, bend it to your needs, or start something of your own.
 
 <p align="center">
-  <img src="docs/thumbs-up.gif" width="280" alt="James Brown giving two thumbs up">
+  <img src="docs/thumbs-up.gif" width="480" alt="James Brown giving two thumbs up">
 </p>
 
 ## Features
