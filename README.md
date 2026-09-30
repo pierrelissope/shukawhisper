@@ -43,8 +43,8 @@ We're lucky to live at a time when trying, iterating and learning have never bee
 - **Multilingual**: the language is detected automatically, including switching between French and English mid-sentence. Nothing is ever translated unless you ask for it.
 - **Personal dictionary**: names, products and jargon (`Supabase`, `kubectl`, your colleagues) are sent to the recognizer as hints and enforced during cleanup.
 - **Styles per app**: *Personal messages*, *Work messages*, *Email*, *AI prompts & code*, *Other*, plus your own categories. Each has a tone preset, custom instructions and an optional writing sample. The style is picked from the frontmost app, **or the browser tab** (Gmail in Chrome counts as *Email*).
-- **Transforms**: select text anywhere and press <kbd>⌥1</kbd>…<kbd>⌥9</kbd> to rewrite it in place. Built-ins are *Polish*, *Prompt Engineer*, *Translate to English* and *Make concise*.
-- **Voice transform**: select text, hold <kbd>⌥0</kbd> and say what to do ("make this friendlier"). With nothing selected, it writes what you ask for.
+- **Transforms**: select text anywhere and press <kbd>⌃⌥1</kbd>…<kbd>⌃⌥9</kbd> to rewrite it in place. Built-ins are *Polish*, *Prompt Engineer*, *Translate to English* and *Make concise*.
+- **Voice transform**: select text, hold <kbd>⌃⌥0</kbd> and say what to do ("make this friendlier"). With nothing selected, it writes what you ask for.
 - **History and stats**: every dictation is saved locally and searchable, with words per minute, time saved and a day streak.
 - **Native and light**: Swift and SwiftUI, a Liquid Glass pill, zero third-party dependencies, about 20 MB of memory.
 
@@ -101,10 +101,10 @@ Then set **System Settings › Keyboard › "Press 🌐 key to" → Do Nothing**
 | Hold <kbd>fn</kbd> | Dictate; release to insert |
 | Double-tap <kbd>fn</kbd> | Hands-free dictation; press <kbd>fn</kbd> again to finish |
 | <kbd>Esc</kbd> | Cancel the current dictation or transform |
-| <kbd>⌥1</kbd> … <kbd>⌥9</kbd> | Apply a transform to the selected text |
-| Hold <kbd>⌥0</kbd> | Voice transform: speak an instruction for the selected text |
+| <kbd>⌃⌥1</kbd> … <kbd>⌃⌥9</kbd> | Apply a transform to the selected text |
+| Hold <kbd>⌃⌥0</kbd> | Voice transform: speak an instruction for the selected text |
 
-Number keys are matched by position, so <kbd>⌥1</kbd> works on AZERTY keyboards too.
+Number keys are matched by position, so <kbd>⌃⌥1</kbd> works on AZERTY keyboards too. Plain <kbd>⌥</kbd> + number is left alone so you can still type symbols with it; if you prefer the shorter <kbd>⌥1</kbd>, switch the transform shortcut in Settings.
 
 ## Customize
 

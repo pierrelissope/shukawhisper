@@ -1,9 +1,9 @@
 import Foundation
 
-/// A saved rewrite applied to selected text with `⌥` + slot number.
+/// A saved rewrite applied to selected text with the transform modifier (`⌃⌥` by default) + slot number.
 public struct Transform: Codable, Sendable, Identifiable, Equatable, Hashable {
     public var id: UUID
-    /// Keyboard slot 1–9 (`⌥1` … `⌥9`). `nil` means unassigned.
+    /// Keyboard slot 1–9 (`⌃⌥1` … `⌃⌥9` by default). `nil` means unassigned.
     public var slot: Int?
     public var name: String
     public var instructions: String
@@ -28,7 +28,7 @@ public struct Transform: Codable, Sendable, Identifiable, Equatable, Hashable {
     }
 
     public static let slots = 1...9
-    /// `⌥0` is reserved for the voice transform (speak your own instruction).
+    /// Digit 0 is reserved for the voice transform (speak your own instruction).
     public static let voiceSlot = 0
 }
 

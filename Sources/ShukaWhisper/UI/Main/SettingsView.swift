@@ -27,6 +27,12 @@ struct SettingsView: View {
                         .buttonStyle(.link)
                         .font(.caption)
                 }
+                row("Transform shortcut", detail: "Held with a number key. ⌃⌥ keeps ⌥ + number free for typing symbols.") {
+                    Picker("", selection: settings.transformModifier) {
+                        ForEach(TransformModifier.allCases) { Text($0.title).tag($0) }
+                    }
+                    .fixedSize()
+                }
                 Divider()
                 row("Spoken language", detail: "Auto-detect handles French and English in the same sentence.") {
                     Picker("", selection: settings.languageMode) {

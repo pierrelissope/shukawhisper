@@ -8,7 +8,8 @@ import ShukaCore
 /// - the dictation key going down / up (`fn` by default),
 /// - any other key pressed while the dictation key is held (it was used as a modifier),
 /// - `Esc` (swallowed only while a session is active),
-/// - `⌥1`…`⌥9` transform shortcuts and `⌥0` voice-transform press / release (always swallowed).
+/// - transform shortcuts (`⌃⌥1`…`⌃⌥9` by default) and voice-transform press / release on digit 0
+///   (swallowed; any other modifier combination passes through, so `⌥` + digit still types symbols).
 @MainActor
 final class HotkeyMonitor {
     enum Event {
@@ -21,6 +22,7 @@ final class HotkeyMonitor {
 
     var onEvent: ((Event) -> Void)?
     var dictationKey: DictationKey = .fn
+    var transformModifier: TransformModifier = .controlOption
     /// Swallow `Esc` so it cancels dictation instead of reaching the frontmost app.
     var interceptsEscape = false
 
@@ -100,14 +102,14 @@ final class HotkeyMonitor {
             return true
         }
 
-        // ⌥0 is held like a push-to-talk key; release is reported even if ⌥ was let go first.
+        // Digit 0 is held like a push-to-talk key; release is reported even if the modifiers were let go first.
         if keyCode == KeyCode.digit0, voiceKeyIsDown, !isDown {
             voiceKeyIsDown = false
             onEvent?(.voiceTransform(isDown: false))
             return true
         }
 
-        if let digit = KeyCode.digits[keyCode], Self.isBareOption(event.flags), !dictationKeyIsDown {
+        if let digit = KeyCode.digits[keyCode], transformModifier.matches(event.flags), !dictationKeyIsDown {
             if isDown, !isRepeat {
                 if digit == Transform.voiceSlot {
                     voiceKeyIsDown = true
@@ -125,12 +127,18 @@ final class HotkeyMonitor {
         return false
     }
 
-    /// Option held, and no other command-style modifier.
-    private static func isBareOption(_ flags: CGEventFlags) -> Bool {
-        flags.contains(.maskAlternate)
-            && !flags.contains(.maskCommand)
-            && !flags.contains(.maskControl)
-            && !flags.contains(.maskShift)
+}
+
+private extension TransformModifier {
+    /// Exactly this modifier combination: extra ⌘ / ⇧ (or ⌃ for `.option`) lets the key through.
+    func matches(_ flags: CGEventFlags) -> Bool {
+        guard flags.contains(.maskAlternate), !flags.contains(.maskCommand), !flags.contains(.maskShift) else {
+            return false
+        }
+        switch self {
+        case .controlOption: return flags.contains(.maskControl)
+        case .option: return !flags.contains(.maskControl)
+        }
     }
 }
 

@@ -50,8 +50,39 @@ public enum DictationKey: String, Codable, CaseIterable, Sendable, Identifiable 
     }
 }
 
+/// Modifier held with a number key to run a transform.
+public enum TransformModifier: String, Codable, CaseIterable, Sendable, Identifiable {
+    /// `⌃⌥` + digit: leaves plain `⌥` + digit free for typing symbols (`{`, `}`, `[`… on AZERTY).
+    case controlOption
+    /// `⌥` + digit: shorter, but hides the symbols macOS types with Option + number keys.
+    case option
+
+    public var id: String { rawValue }
+
+    public var title: String {
+        switch self {
+        case .controlOption: "⌃ Control + ⌥ Option"
+        case .option: "⌥ Option only"
+        }
+    }
+
+    public var symbols: [String] {
+        switch self {
+        case .controlOption: ["⌃", "⌥"]
+        case .option: ["⌥"]
+        }
+    }
+
+    /// Key caps for a slot, e.g. `["⌃", "⌥", "1"]`.
+    public func keys(slot: Int) -> [String] { symbols + ["\(slot)"] }
+
+    /// Compact label for a slot, e.g. `⌃⌥1`.
+    public func label(slot: Int) -> String { keys(slot: slot).joined() }
+}
+
 public struct AppSettings: Codable, Sendable, Equatable {
     public var dictationKey: DictationKey = .fn
+    public var transformModifier: TransformModifier = .controlOption
     public var languageMode: LanguageMode = .auto
     /// Run the AI cleanup/style pass. When off, the raw transcript is inserted.
     public var cleanupEnabled = true
@@ -70,6 +101,7 @@ public struct AppSettings: Codable, Sendable, Equatable {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         let d = AppSettings()
         dictationKey = try c.decodeIfPresent(DictationKey.self, forKey: .dictationKey) ?? d.dictationKey
+        transformModifier = try c.decodeIfPresent(TransformModifier.self, forKey: .transformModifier) ?? d.transformModifier
         languageMode = try c.decodeIfPresent(LanguageMode.self, forKey: .languageMode) ?? d.languageMode
         cleanupEnabled = try c.decodeIfPresent(Bool.self, forKey: .cleanupEnabled) ?? d.cleanupEnabled
         formatterModel = try c.decodeIfPresent(String.self, forKey: .formatterModel) ?? d.formatterModel

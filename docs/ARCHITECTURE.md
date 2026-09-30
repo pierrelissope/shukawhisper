@@ -38,7 +38,7 @@ Sources/
 8. **`TextInserter`** saves the pasteboard, writes the text (marked transient for clipboard managers), sends `⌘V`, and restores the pasteboard.
 9. The entry is saved to **`HistoryStore`** and the pill shows ✓.
 
-Transforms take the same path without steps 2–5: `⌥n` → read the selection (Accessibility API first, then a synthetic `⌘C`) → `PromptBuilder.transform` → `TextGenerator` → paste over the selection.
+Transforms take the same path without steps 2–5: `⌃⌥n` → read the selection (Accessibility API first, then a synthetic `⌘C`) → `PromptBuilder.transform` → `TextGenerator` → paste over the selection.
 
 ## Concurrency
 

@@ -260,7 +260,7 @@ final class SessionController {
             return
         }
         guard let transform = configuration.transform(inSlot: slot) else {
-            showError("Nothing assigned to ⌥\(slot)")
+            showError("Nothing assigned to \(settings.transformModifier.label(slot: slot))")
             return
         }
         hidePill?.cancel()

@@ -6,20 +6,22 @@ struct TransformsView: View {
     @Environment(AppModel.self) private var app
     @State private var editingSlot: Int?
 
+    private var modifier: TransformModifier { app.settings.transformModifier }
+
     var body: some View {
         Page(title: "Transforms", subtitle: "Select text in any app, then press a shortcut to rewrite it in place. ⌘Z undoes it.") {
             voiceCard
 
             VStack(spacing: 8) {
                 ForEach(Array(Transform.slots), id: \.self) { slot in
-                    SlotRow(slot: slot, transform: app.configuration.transform(inSlot: slot)) {
+                    SlotRow(slot: slot, keys: modifier.keys(slot: slot), transform: app.configuration.transform(inSlot: slot)) {
                         editingSlot = slot
                     }
                 }
             }
         }
         .sheet(item: $editingSlot) { slot in
-            TransformEditor(slot: slot, original: app.configuration.transform(inSlot: slot)) { result in
+            TransformEditor(slot: slot, keys: modifier.keys(slot: slot), original: app.configuration.transform(inSlot: slot)) { result in
                 save(result, slot: slot)
                 editingSlot = nil
             } onCancel: {
@@ -39,10 +41,10 @@ struct TransformsView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack {
                         Text("Voice transform").font(.headline)
-                        KeyCaps(keys: ["⌥", "0"])
+                        KeyCaps(keys: modifier.keys(slot: Transform.voiceSlot))
                         Text("hold").font(.caption).foregroundStyle(.secondary)
                     }
-                    Text("Select text, hold ⌥0 and say what to do: \"make this friendlier\", \"translate to Spanish\". With nothing selected, it writes what you ask for.")
+                    Text("Select text, hold \(modifier.label(slot: Transform.voiceSlot)) and say what to do: \"make this friendlier\", \"translate to Spanish\". With nothing selected, it writes what you ask for.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -67,6 +69,7 @@ extension Int: @retroactive Identifiable {
 
 private struct SlotRow: View {
     let slot: Int
+    let keys: [String]
     let transform: Transform?
     let onEdit: () -> Void
     @State private var hovering = false
@@ -74,7 +77,7 @@ private struct SlotRow: View {
     var body: some View {
         Button(action: onEdit) {
             HStack(spacing: 14) {
-                KeyCaps(keys: ["⌥", "\(slot)"])
+                KeyCaps(keys: keys)
                 if let transform {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(transform.name).font(.headline)
@@ -109,6 +112,7 @@ private struct TransformEditor: View {
     enum Result { case save(Transform), delete }
 
     let slot: Int
+    let keys: [String]
     let original: Transform?
     let onDone: (Result) -> Void
     let onCancel: () -> Void
@@ -117,8 +121,9 @@ private struct TransformEditor: View {
     @State private var instructions: String
     @State private var samples: [String]
 
-    init(slot: Int, original: Transform?, onDone: @escaping (Result) -> Void, onCancel: @escaping () -> Void) {
+    init(slot: Int, keys: [String], original: Transform?, onDone: @escaping (Result) -> Void, onCancel: @escaping () -> Void) {
         self.slot = slot
+        self.keys = keys
         self.original = original
         self.onDone = onDone
         self.onCancel = onCancel
@@ -132,7 +137,7 @@ private struct TransformEditor: View {
             HStack {
                 Text(original == nil ? "New transform" : "Edit transform").font(.title2.weight(.semibold))
                 Spacer()
-                KeyCaps(keys: ["⌥", "\(slot)"])
+                KeyCaps(keys: keys)
             }
 
             TextField("Name, e.g. Friendly reply", text: $name)

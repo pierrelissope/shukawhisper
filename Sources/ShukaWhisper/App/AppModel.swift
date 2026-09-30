@@ -60,6 +60,7 @@ final class AppModel {
     /// Pushes settings that services read directly.
     func applySettings() {
         hotkeys.dictationKey = settings.dictationKey
+        hotkeys.transformModifier = settings.transformModifier
         pill.showsIdleIndicator = settings.showIdleIndicator
     }
 
